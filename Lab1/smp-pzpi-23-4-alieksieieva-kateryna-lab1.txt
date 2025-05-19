@@ -1,1 +1,319 @@
+МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ
+УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+
+
+
+
+
+
+
+ЗВІТ
+з дисципліни «Скриптові мови програмування»
+Лабораторна робота №1
+
+
+
+
+
+Виконала: 							Перевірив: 
+ст. гр. ПЗПІ-23-4 						старший викладач каф. ПІ 
+Алєксєєва К.С. 						Сокорчук І.П.
+
+
+
+
+
+
+ХАРКІВ 2025 
+ХІД РОБОТИ
+
+1.	Історія змін
+
+№	Дата	Версія звіту	Опис змін та виправлень
+1	15.05.2025	0.1	Створено розділ «Завдання»
+2	15.05.2025	0.1	Створено розділ «Опис Виконаної роботи»
+3	15.05.2025	0.1	Створено розділ «Висновки»
+
+2.	Завдання
+Розробити Bash-скрипт, який обробляє експортований із сайту https://cist.nure.ua/ розклад занять для всіх груп потоку в форматі CSV та перетворює його у формат CSV для завантаження в Google Календар https://support.google.com/.
+
+3.	Обробка отриманих параметрів
+Скрипт починає роботу з перевірки переданих аргументів командного рядка (Додаток А: рядки 8–31).
+Передбачено обробку параметрів --help, --version, -q/--quiet, а також підтримку інтерактивного вибору файлу та групи при відсутності аргументів.
+У разі відсутності вхідних параметрів скрипт:
+•	Виводить список доступних CSV-файлів для вибору (Додаток А: рядки 37–47).
+•	Відкриває список академічних груп у файлі, фільтруючи лише ті, що відповідають шаблону ПЗПІ-23-[0-9]+ (Додаток А: рядки 64–70).
+•	Виконує вибір потрібної групи через меню select (Додаток А: рядки 85–105).
+
+
+4.	Обробка файлу розкладу
+Після вибору файлу:
+•	Перевіряє наявність та доступність файлу для читання (Додаток А: рядки 59–62).
+•	Виконує перекодування файлу у UTF-8 за допомогою iconv, враховуючи можливе початкове кодування Windows-1251 (Додаток А: рядок 64).
+•	Також визначається формат CSV-файлу: класичний чи fallback (Додаток А: рядки 107–118), що впливає на логіку подальшої обробки.
+
+5.	Форматування даних
+Дані обробляються через awk скрипт:
+•	Вил
+•	Вилучення лише рядків обраної академічної групи, включаючи очищення від зайвих символів (Додаток А: рядки 134–138).
+•	Відокремлення предмету від повної назви (формат "група - предмет") для коректного відображення у календарі (Додаток А: рядки 139–147).
+•	Визначення типу заняття (лекція, лабораторна, практичне, екзамен) з додаванням уточнень, таких як "№1" або "№2" (Додаток А: рядки 148–150).
+•	Формування ключа сортування за датою і часом (у форматі YYYYMMDDHHMM) (Додаток А: рядки 151–153).
+•	Сортування занять у хронологічному порядку (Додаток А: рядок 179).
+•	Форматування дати у вигляді MM/DD/YYYY (Додаток А: рядки 193–197).
+•	Форматування часу у 12-годинному форматі AM/PM для Google Calendar (Додаток А: рядки 198–206).
+•	Створення фінального CSV-рядка з полями:
+•	"Subject", "Start Date", "Start Time", "End Date", "End Time", "Description"
+•	(Додаток А: рядки 207–215).
+•	Додатково виконуються перевірки на валідність дати й часу для уникнення помилок форматування (Додаток А: рядки 209–210).
+
+6.	Вивід результату
+Скрипт додає BOM (Byte Order Mark) для правильного відображення UTF-8 в Excel або Google Календарі (Додаток А: рядки 69–70).
+
+Формується фінальний файл результатів з назвою Google_<ім'я_вхідного_файлу>_formatted.csv (Додаток А: рядки 130, 217).
+
+У разі відсутності параметра --quiet, результат додатково виводиться у консоль (Додаток А: рядок 217).
+
+
+ВИСНОВОК
+У ході виконання лабораторної роботи було розроблено Bash-скрипт для обробки CSV-файлів розкладу. Реалізовано автоматичний вибір академічної групи за заданим шаблоном, правильне форматування даних для експорту в Google Календар або Excel. Скрипт враховує кодування файлів, підтримує режим без виводу (quiet mode) та обробляє некоректні дані.
+ДОДАТОК А
+Розроблений скрипт
+     1  #!/bin/bash
+     2
+     3  VERSION="1.0"
+     4  QUIET_MODE=false
+     5  GROUP=""
+     6  CSV_FILE=""
+     7
+     8  for arg in "$@"; do
+     9      case "$arg" in
+    10          --help)
+    11              echo "Використання: $0 [група] [файл.csv]"
+    12              echo "  --help       Показати інструкцію"
+    13              echo "  --version    Показати версію"
+    14              echo "  -q, --quiet  Тихий режим (без виводу)"
+    15              exit 0
+    16              ;;
+    17          --version)
+    18              echo "Версія: $VERSION"
+    19              exit 0
+    20              ;;
+    21          -q|--quiet)
+    22              QUIET_MODE=true
+    23              ;;
+    24          *.csv)
+    25              CSV_FILE="$arg"
+    26              ;;
+    27          *)
+    28              GROUP="$arg"
+    29              ;;
+    30      esac
+    31  done
+    32
+    33  print_if_needed() {
+    34      $QUIET_MODE || echo "$@"
+    35  }
+    36
+    37  if [ -z "$CSV_FILE" ]; then
+    38      files_found=($(ls -1t | grep -E '^TimeTable_[0-9]{2}_[0-9]{2}_[0-9]{4}\.csv'))
+    39      if [ ${#files_found[@]} -eq 0 ]; then
+    40          echo "Не знайдено жодного файлу розкладу." >&2
+    41          exit 1
+    42      fi
+    43      files_found+=("Вихід")
+    44      print_if_needed "Виберіть файл розкладу:"
+    45      select f in "${files_found[@]}"; do
+    46          if [ "$f" == "Вихід" ]; then
+    47              print_if_needed "Операцію скасовано."
+    48              exit 0
+    49          elif [ -n "$f" ]; then
+    50              CSV_FILE="$f"
+    51              print_if_needed "Файл обрано: $CSV_FILE"
+    52              break
+    53          else
+    54              print_if_needed "Невірний вибір, спробуйте знову."
+    55          fi
+    56      done
+    57  fi
+    58
+    59  if [ ! -f "$CSV_FILE" ]; then
+    60      echo "Файл '$CSV_FILE' не знайдено." >&2
+    61      exit 1
+    62  fi
+    63
+    64  temp_group_file=$(mktemp)
+    65  mapfile -t all_groups < <(sed 's/\r/\n/g' "$CSV_FILE" | iconv -f cp1251 -t utf-8 2>/dev/null | tee "$temp_group_file" | awk '
+    66      BEGIN { FPAT="[^,]*|\"[^\"]*\"" }
+    67      NR > 1 {
+    68          gsub(/^"|"$/, "", $1)
+    69          n = split($1, segments, " ")
+    70          for (i = 1; i <= n; ++i) {
+    71              if (segments[i] ~ /^ПЗПІ-23-[0-9]+$/) print segments[i]
+    72          }
+    73      }' | sort -u)
+    74
+    75  if [ ${#all_groups[@]} -eq 0 ]; then
+    76      echo "Групи у форматі ПЗПІ-23-ЧИСЛО не знайдено." >&2
+    77      exit 1
+    78  fi
+    79
+    80  if [[ -n "$GROUP" && ${#all_groups[@]} -eq 1 && "$GROUP" != "${all_groups[0]}" ]]; then
+    81      print_if_needed "Файл містить лише одну групу: ${all_groups[0]}"
+    82      exit 0
+    83  fi
+    84
+    85  if [ -z "$GROUP" ]; then
+    86      if [ ${#all_groups[@]} -eq 1 ]; then
+    87          GROUP="${all_groups[0]}"
+    88          print_if_needed "Знайдена єдина група: $GROUP"
+    89      else
+    90          all_groups+=("Назад")
+    91          print_if_needed "Оберіть групу:"
+    92          select g in "${all_groups[@]}"; do
+    93              if [ "$g" = "Назад" ]; then
+    94                  print_if_needed "Скасовано вибір групи."
+    95                  exit 0
+    96              elif [ -n "$g" ]; then
+    97                  GROUP="$g"
+    98                  print_if_needed "Група обрана: $GROUP"
+    99                  break
+   100              else
+   101                  print_if_needed "Спробуйте ще раз."
+   102              fi
+   103          done
+   104      fi
+   105  fi
+   106
+   107  mode=$(sed 's/\r/\n/g' "$CSV_FILE" | iconv -f cp1251 -t utf-8 | awk '
+   108      BEGIN { FPAT="[^,]*|\"[^\"]*\"" }
+   109      NR > 1 {
+   110          gsub(/^"|"$/, "", $1)
+   111          split($1, p, " ")
+   112          if (p[1] ~ /^ПЗПІ-23-[0-9]+$/) {
+   113              print "standard"
+   114          } else if ($5 ~ /^ПЗПІ-23-[0-9]+$/) {
+   115              print "fallback:" $5
+   116          }
+   117          exit
+   118      }')
+   119
+   120  if [[ "$mode" =~ fallback:(.*) ]]; then
+   121      fallback="${BASH_REMATCH[1]}"
+   122      print_if_needed "Режим fallback. Група: $fallback"
+   123      GROUP="$fallback"
+   124      sed 's/\r/\n/g' "$CSV_FILE" | iconv -f cp1251 -t utf-8
+   125      exit 0
+   126  fi
+   127
+   128  print_if_needed "Розклад для: $GROUP"
+   129
+   130  out_file="Google_$(basename "$CSV_FILE")"
+   131  temp_a=$(mktemp)
+   132  temp_b=$(mktemp)
+   133
+   134  sed 's/\r/\n/g' "$CSV_FILE" | iconv -f cp1251 -t utf-8 | awk -v GRP="$GROUP" '
+   135  BEGIN { FS=","; OFS="\t" }
+   136  NR == 1 { next }
+   137
+   138  function clean(txt) { gsub(/^"|"$/, "", txt); return txt }
+   139  function get_key(d, t) {
+   140      split(d, d_arr, "."); split(t, t_arr, ":")
+   141      return sprintf("%04d%02d%02d%02d%02d", d_arr[3], d_arr[2], d_arr[1], t_arr[1], t_arr[2])
+   142  }
+   143
+   144  {
+   145      original = $0
+   146      match(original, /"[0-3][0-9]\.[0-1][0-9]\.[0-9]{4}"/)
+   147      if (RSTART == 0) next
+   148
+   149      pre = substr(original, 1, RSTART - 2)
+   150      rest = substr(original, RSTART)
+   151      n = 0; quoted = 0; token = ""
+   152
+   153      for (i = 1; i <= length(rest); ++i) {
+   154          ch = substr(rest, i, 1)
+   155          if (ch == "\"") quoted = !quoted
+   156          else if (ch == "," && !quoted) {
+   157              fields[++n] = token; token = ""
+   158          } else token = token ch
+   159      }
+   160      fields[++n] = token
+   161      for (j = 1; j <= n; ++j) fields[j] = clean(fields[j])
+   162      if (n < 12) next
+   163
+   164      match(pre, /(ПЗПІ-[0-9]+-[0-9]+)/, grp_match)
+   165      if (grp_match[1] != GRP) next
+   166      gsub(/^[[:space:]]+/, "", pre)
+   167      subj = pre
+   168      desc = fields[11]
+   169      type = "Інше"
+   170      if (desc ~ /Лб/) type = "Лб"
+   171      else if (desc ~ /Лк/) type = "Лк"
+   172      else if (desc ~ /Пз/) type = "Пз"
+   173      else if (desc ~ /Екз|Exam|екзамен/i) type = "Екз"
+   174
+   175      print subj, type, fields[1], fields[2], fields[3], fields[4], desc, get_key(fields[1], fields[2])
+   176  }
+   177  ' > "$temp_a"
+   178
+   179  sort -t $'\t' -k8,8 "$temp_a" > "$temp_b"
+   180
+   181  awk -F'\t' '
+   182  BEGIN {
+   183      OFS = ","
+   184      print "Subject", "Start Date", "Start Time", "End Date", "End Time", "Description"
+   185  }
+   186  function format_date(dt) {
+   187      split(dt, d, ".")
+   188      return sprintf("%02d/%02d/%04d", d[2], d[1], d[3])
+   189  }
+   190  function format_time(tm) {
+   191      split(tm, t, ":")
+   192      h = t[1] + 0
+   193      m = t[2]
+   194      suffix = (h >= 12) ? "PM" : "AM"
+   195      if (h == 0) h = 12
+   196      else if (h > 12) h -= 12
+   197      return sprintf("%02d:%s %s", h, m, suffix)
+   198  }
+   199  {
+   200      pair = $1 "_" $2
+   201      unique_key = $3 "_" $7
+   202      if ($2 == "Лб") {
+   203          if (!(unique_key in lab_count)) {
+   204              count[pair]++
+   205              lab_count[unique_key] = count[pair]
+   206          }
+   207          num = lab_count[unique_key]
+   208      } else {
+   209          count[pair]++
+   210          num = count[pair]
+   211      }
+   212      full_title = $1 "; №" num
+   213      print "\"" full_title "\"", "\"" format_date($3) "\"", "\"" format_time($4) "\"", "\"" format_date($5) "\"", "\"" format_time($6) "\"", "\"" $7 "\""
+   214  }
+   215  ' "$temp_b" > "$out_file"
+   216
+   217  $QUIET_MODE || cat "$out_file"
+   218
+   219  rm -f "$temp_a" "$temp_b" "$temp_group_file"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Посилання на відео на ютуб
+
 https://youtu.be/V8rq_QQ33no
