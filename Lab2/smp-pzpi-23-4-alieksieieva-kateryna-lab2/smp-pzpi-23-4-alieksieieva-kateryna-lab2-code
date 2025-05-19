@@ -1,1 +1,181 @@
+<?php
+
+$products = [
+    1 => ['name' => 'Молоко пастеризоване', 'price' => 12],
+    2 => ['name' => 'Хліб чорний',          'price' =>  9],
+    3 => ['name' => 'Сир білий',            'price' => 21],
+    4 => ['name' => 'Сметана 20%',          'price' => 25],
+    5 => ['name' => 'Кефір 1%',             'price' => 19],
+    6 => ['name' => 'Вода газована',        'price' => 18],
+    7 => ['name' => 'Печиво "Весна"',       'price' => 14]
+];
+
+$cart = [];
+$userProfile = ['name' => '', 'age' => 0];
+
+function showMainMenu() {
+    echo "\n================================\n";
+    echo "== ПРОДОВОЛЬЧИЙ МАГАЗИН ВЕСНА ==\n";
+    echo "================================\n";
+    echo "1. Вибрати товари\n";
+    echo "2. Отримати рахунок\n";
+    echo "3. Налаштування профілю\n";
+    echo "0. Вийти\n";
+    echo "--------------------------------\n";
+    echo "Ваш вибір: ";
+}
+
+function showProducts() {
+    global $products;
+    echo "\n==========================================\n";
+    echo "№  НАЗВА ТОВАРУ               ЦІНА (ГРН)\n";
+    echo "------------------------------------------\n";
+    foreach ($products as $id => $product) {
+        printf("%-3s%-25s%8s\n", $id, $product['name'], $product['price']);
+    }
+    echo "------------------------------------------\n";
+    echo "0. Назад до головного меню\n";
+    echo "==========================================\n";
+    echo "Оберіть товар (введіть номер): ";
+}
+
+function showCart() {
+    global $cart, $products;
+    if (empty($cart)) {
+        echo "\n--------------------------------\n";
+        echo "КОШИК ПОРОЖНІЙ\n";
+        echo "--------------------------------\n";
+    } else {
+        echo "\n==========================================\n";
+        echo "ВАШ КОШИК:\n";
+        echo "------------------------------------------\n";
+        echo "НАЗВА ТОВАРУ               КІЛЬКІСТЬ\n";
+        echo "------------------------------------------\n";
+        foreach ($cart as $id => $quantity) {
+            printf("%-25s%8s\n", $products[$id]['name'], $quantity);
+        }
+        echo "==========================================\n";
+    }
+}
+
+function showBill() {
+    global $cart, $products;
+    $total = 0;
+
+    echo "\n==================================================================\n";
+    echo "№  НАЗВА ТОВАРУ               ЦІНА   КІЛЬК.   СУМА\n";
+    echo "------------------------------------------------------------------\n";
+
+    foreach ($cart as $id => $quantity) {
+        $price = $products[$id]['price'];
+        $sum = $price * $quantity;
+        $total += $sum;
+        printf("%-3s%-25s%6s%8s%10s\n", $id, $products[$id]['name'], $price, $quantity, $sum);
+    }
+
+    echo "------------------------------------------------------------------\n";
+    printf("%40s%12s\n", "РАЗОМ ДО СПЛАТИ:", $total);
+    echo "==================================================================\n";
+}
+
+function setUserProfile() {
+    global $userProfile;
+
+    do {
+        echo "\nВведіть ваше ім'я: ";
+        $name = trim(fgets(STDIN));
+        if (empty($name)) {
+            echo "Будь ласка, введіть коректне ім'я!\n";
+        }
+    } while (empty($name));
+
+    do {
+        echo "Введіть ваш вік: ";
+        $age = (int)trim(fgets(STDIN));
+        if ($age < 7 || $age > 150) {
+            echo "Вік повинен бути від 7 до 150 років!\n";
+        }
+    } while ($age < 7 || $age > 150);
+
+    $userProfile['name'] = $name;
+    $userProfile['age'] = $age;
+    echo "\nПрофіль оновлено!\n";
+}
+
+function main() {
+    global $products, $cart;
+
+    while (true) {
+        showMainMenu();
+        $choice = trim(fgets(STDIN));
+
+        switch ($choice) {
+            case '1':
+                while (true) {
+                    showProducts();
+                    $productId = (int)trim(fgets(STDIN));
+
+                    if ($productId === 0) break;
+
+                    if (!isset($products[$productId])) {
+                        echo "\n--------------------------------\n";
+                        echo "ПОМИЛКА: Товару з номером $productId не існує!\n";
+                        echo "Будь ласка, спробуйте ще раз.\n";
+                        echo "--------------------------------\n";
+                        continue;
+                    }
+
+                    echo "\nВи обрали: {$products[$productId]['name']}\n";
+                    echo "Введіть кількість (0 для видалення): ";
+                    $quantity = (int)trim(fgets(STDIN));
+
+                    if ($quantity < 0 || $quantity >= 100) {
+                        echo "Кількість має бути від 0 до 99!\n";
+                        continue;
+                    }
+
+                    if ($quantity === 0) {
+                        if (isset($cart[$productId])) {
+                            unset($cart[$productId]);
+                            echo "Товар видалено з кошика!\n";
+                        } else {
+                            echo "Цей товар відсутній у кошику!\n";
+                        }
+                    } else {
+                        $cart[$productId] = $quantity;
+                        echo "Товар успішно додано!\n";
+                    }
+
+                    showCart();
+                }
+                break;
+
+            case '2':
+                if (empty($cart)) {
+                    echo "\n--------------------------------\n";
+                    echo "Ваш кошик порожній!\n";
+                    echo "--------------------------------\n";
+                } else {
+                    showBill();
+                }
+                break;
+
+            case '3':
+                setUserProfile();
+                break;
+
+            case '0':
+                echo "\nДякуємо! Гарного дня!\n";
+                exit;
+
+            default:
+                echo "\n--------------------------------\n";
+                echo "ПОМИЛКА: Невірна команда!\n";
+                echo "--------------------------------\n";
+        }
+    }
+}
+
+main();
+?>
 
