@@ -100,6 +100,7 @@ SELECT * FROM products;
 00:00 Початок
 00:10 Вступ
 1:00 Детальний опис коду
+GitHub репозиторій: https://github.com/NureAlieksieievaKateryna/smp-pzpi-23-4-alieksieieva-kateryna/blob/main/Lab3/smp-pzpi-23-4-alieksieieva-kateryna-lab3/shop/db.php
 1.	Заповнення бази товарами
      1    <?php
      2         $db = new PDO('sqlite:database.sqlite');
@@ -139,6 +140,7 @@ SELECT * FROM products;
     36
 37	      echo "Продукти харчування додані.";
 
+GitHub репозиторій: https://github.com/NureAlieksieievaKateryna/smp-pzpi-23-4-alieksieieva-kateryna/blob/main/Lab3/smp-pzpi-23-4-alieksieieva-kateryna-lab3/shop/cart.php 
 2.	cart.php
       1  <?php
      2  session_start();
@@ -218,6 +220,7 @@ SELECT * FROM products;
     76  </body>
 77	</html>
 
+GitHub репозиторій: https://github.com/NureAlieksieievaKateryna/smp-pzpi-23-4-alieksieieva-kateryna/blob/main/Lab3/smp-pzpi-23-4-alieksieieva-kateryna-lab3/shop/index.php
 3.	index.php
      1  <?php
      2  session_start();
@@ -266,6 +269,7 @@ SELECT * FROM products;
     45  </body>
 46	</html>
 
+GitHub репозиторій:https://github.com/NureAlieksieievaKateryna/smp-pzpi-23-4-alieksieieva-kateryna/blob/main/Lab3/smp-pzpi-23-4-alieksieieva-kateryna-lab3/shop/home.php
 4.	home.php
      1  <!DOCTYPE html>
      2  <html>
