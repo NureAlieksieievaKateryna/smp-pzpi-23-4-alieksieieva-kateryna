@@ -1,1 +1,303 @@
+МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ
+УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+
+
+
+
+
+
+
+ЗВІТ
+з дисципліни «Скриптові мови програмування»
+Лабораторна робота №3
+
+
+
+
+
+Виконала: 							Перевірив: 
+ст. гр. ПЗПІ-23-4 						старший викладач каф. ПІ 
+Алєксєєва К.С. 						Сокорчук І.П.
+
+
+
+
+
+
+ХАРКІВ 2025 
+ХІД РОБОТИ
+
+1.	Історія змін
+№	Дата	Версія звіту	Опис змін та виправлень
+1	19.05.2025	0.1	Створено розділ «Завдання»
+2	19.05.2025	0.1	Створено розділ «Опис Виконаної роботи»
+3	19.05.2025	0.1	Створено розділ «Висновки»
+
+2.	Завдання
+Отримати базові знання з розробки сайті. Мета завдання реалізувати дві основні сторінки інтернет-магазину: головна сторінка, кошик, сторінка товарів.
+
+3.	Хід роботи
+Створення таблиці товарів. Для зберігання інформації про товари створено таблицю products.
+     1  <?php
+     2  $db = new PDO('sqlite:database.sqlite');
+     3  $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+     4
+     5  $db->exec("CREATE TABLE IF NOT EXISTS products (
+     6      id INTEGER PRIMARY KEY AUTOINCREMENT,
+     7      name TEXT NOT NULL,
+     8      price INTEGER NOT NULL
+     9  )");
+    10
+    11  echo "База и таблица products готовы!";
+    12  ?>
+
+Дані були заповнені за допомогою скрипта add_products.php, де в масиві наведено 20 різних продуктів із цінами. (Див додаток А пункт 1)
+
+4.	Робота з товарами
+4.1 Сторінка товарів (index.php)
+Форма відображає всі товари з таблиці. Навпроти кожного товару є:
+•	назва товару,
+•	його ціна,
+•	поле введення кількості.
+В кінці списку — кнопка "Додати до кошика", що надсилає дані на обробку. (Див додаток А пункт 3).
+4.2 Сторінка «Кошик» (cart.php)
+Сторінка реалізована у вигляді таблиці (відповідає рисунку Б.1). Структура таблиці:
+
+ID	Назва	Ціна за одиницю	Кількість	Сума	Дія
+Таблиця 4.1 – структура таблиці кошик
+
+На сторінці ми можемо: підраховувати загальну суму, можемо видалити товар з кошика через параметр remove. Дані зберігаються в $_SESSION['cart'].
+4.3 Перегяляд збережених даних у базі
+sqlite3 database.sqlite
+Перегляд таблиці та даних які збережені(див рис Б.2)
+SELECT * FROM products;
+
+5.	Форматування даних
+5.1. Відображення кошика
+Функція showCart() (умовно — це частина логіки у cart.php, рядки 29–35 і 38–72) відповідає за виведення вмісту кошика. Також перевіряє:
+•	Перевіряє, чи є товари у сесії $_SESSION['cart']
+•	Повідомлення про порожній кошик (якщо товарів немає)
+•	Якщо є товари: робиться запит до бази (SELECT * FROM products WHERE id IN (...))
+Отримані товари виводяться у вигляді HTML-таблиці з інформацією.
+5.2. Формування рахунку
+Функція showBill() (метод в cart.php, рядки 51–68) формує деталізований рахунок для користувача:
+•	Виводить таблицю з товарами.
+•	Для кожного товару обчислюється:
+•  Ціна за одиницю ($product['price'])
+•  Кількість товару ($qty)
+•  Вартість позиції ($sum = $qty * $price)
+(Див додаток А пункт 2).
+
+ВИСНОВОК
+У ході виконання лабораторної роботи було створено мініатюрну систему інтернет-магазину з можливістю перегляду товарів, формування замовлення та перегляду кошика. Застосування мови програмування PHP у поєднанні з базою даних SQLite дозволило реалізувати повний цикл взаємодії користувача із сайтом — від перегляду асортименту до підрахунку вартості замовлення.
+ДОДАТОК А
+Розроблений скрипт
+1.	Заповнення бази товарами
+     1    <?php
+     2         $db = new PDO('sqlite:database.sqlite');
+     3         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+     4
+     5         $products = [
+     6             ['name' => 'Яблука (1 кг)', 'price' => 40],
+     7             ['name' => 'Банани (1 кг)', 'price' => 35],
+     8             ['name' => 'Молоко 1 л', 'price' => 25],
+     9             ['name' => 'Хліб', 'price' => 20],
+    10            ['name' => 'Масло верщкове 200 г', 'price' => 90],
+    11            ['name' => 'Сир 1 кг', 'price' => 300],
+    12            ['name' => 'Курка (1 кг)', 'price' => 150],
+    13            ['name' => 'Яловичина (1 кг)', 'price' => 400],
+    14            ['name' => 'Свинина (1 кг)', 'price' => 350],
+    15            ['name' => 'Картопля (1 кг)', 'price' => 15],
+    16            ['name' => 'Морква (1 кг)', 'price' => 20],
+    17            ['name' => 'Цибуля (1 кг)', 'price' => 18],
+    18            ['name' => 'Яйця 10 шт', 'price' => 40],
+    19            ['name' => 'Рис (1 кг)', 'price' => 50],
+    20            ['name' => 'Макарони (1 кг)', 'price' => 45],
+    21            ['name' => 'Томати (1 кг)', 'price' => 55],
+    22            ['name' => 'Огірки (1 кг)', 'price' => 50],
+    23            ['name' => 'Кефір 1 л', 'price' => 30],
+    24            ['name' => 'Цукор (1 кг)', 'price' => 35],
+    25            ['name' => 'Чай (100 г)', 'price' => 70],
+    26        ];
+    27
+    28        $stmt = $db->prepare("INSERT INTO products (name, price) VALUES (:name, :price)");
+    29
+    30        foreach ($products as $product) {
+    31            $stmt->execute([
+    32                ':name' => $product['name'],
+    33                ':price' => $product['price'],
+    34            ]);
+    35        }
+    36
+37	      echo "Продукти харчування додані.";
+
+2.	cart.php
+      1  <?php
+     2  session_start();
+     3  require 'db.php';
+     4
+     5  if (isset($_GET['remove'])) {
+     6      $id = $_GET['remove'];
+     7      unset($_SESSION['cart'][$id]);
+     8      header("Location: cart.php");
+     9      exit;
+    10  }
+    11
+    12  $cart = $_SESSION['cart'] ?? [];
+    13  ?>
+    14  <!DOCTYPE html>
+    15  <html>
+    16  <head>
+    17      <title>Кошик</title>
+    18      <link rel="stylesheet" href="styles.css">
+    19  </head>
+    20  <body>
+    21  <header><h1>Інтернет-магазин Весна</h1></header>
+    22  <nav class="menu">
+    23      <a href="home.php">Головна</a>
+    24      <a href="index.php">Товари</a>
+    25      <a href="cart.php">Кошик</a>
+    26  </nav>
+    27
+    28  <main>
+    29  <?php if (empty($cart)): ?>
+    30      <p>Кошик порожній. <a href="index.php">Перейти до покупок</a></p>
+    31  <?php else:
+    32      $placeholders = implode(',', array_fill(0, count($cart), '?'));
+    33      $stmt = $db->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
+    34      $stmt->execute(array_keys($cart));
+    35      $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    36      $total = 0;
+    37  ?>
+    38      <h2>Ваш кошик</h2>
+    39      <table class="cart-table">
+    40          <thead>
+    41              <tr>
+    42                  <th>ID</th>
+    43                  <th>Назва</th>
+    44                  <th>Ціна за одиницю</th>
+    45                  <th>Кількість</th>
+    46                  <th>Сума</th>
+    47                  <th>Дія</th>
+    48              </tr>
+    49          </thead>
+    50          <tbody>
+    51          <?php foreach ($products as $product):
+    52              $qty = $cart[$product['id']];
+    53              $sum = $qty * $product['price'];
+    54              $total += $sum;
+    55          ?>
+    56              <tr>
+    57                  <td><?= $product['id'] ?></td>
+    58                  <td><?= htmlspecialchars($product['name']) ?></td>
+    59                  <td><?= $product['price'] ?> грн</td>
+    60                  <td><?= $qty ?></td>
+    61                  <td><?= $sum ?> грн</td>
+    62                  <td><a href="?remove=<?= $product['id'] ?>" class="remove">Видалити</a></td>
+    63              </tr>
+    64          <?php endforeach; ?>
+    65          <tr class="total-row">
+    66              <td colspan="4" style="text-align: right;"><strong>Загальна сума:</strong></td>
+    67              <td colspan="2"><strong><?= $total ?> грн</strong></td>
+    68          </tr>
+    69          </tbody>
+    70      </table>
+    71      <a href="index.php">Продовжити покупки</a>
+    72  <?php endif; ?>
+    73  </main>
+    74
+    75  <footer style="color:white;"><p><a href="home.php" style="color:white;">Головна</a> | <a href="index.php" style="color:white;">Товари</a> | <a href="cart.php" style="color:white;">Кошик</a></p></footer>
+    76  </body>
+77	</html>
+
+3.	index.php
+     1  <?php
+     2  session_start();
+     3  require 'db.php';
+     4
+     5  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+     6      $id = $_POST['id'];
+     7      $qty = (int)$_POST['quantity'];
+     8      if ($qty > 0) {
+     9          $_SESSION['cart'][$id] = ($_SESSION['cart'][$id] ?? 0) + $qty;
+    10      }
+    11  }
+    12
+    13  $products = $db->query("SELECT * FROM products")->fetchAll(PDO::FETCH_ASSOC);
+    14  ?>
+    15
+    16  <!DOCTYPE html>
+    17  <html>
+    18  <head>
+    19      <link rel="stylesheet" href="styles.css">
+    20      <title>Товари</title>
+    21  </head>
+    22  <body>
+    23  <header><h1>Інтернет-магазин Весна</h1></header>
+    24  <nav class="menu">
+    25      <a href="home.php">Головна</a>
+    26      <a href="index.php">Товари</a>
+    27      <a href="cart.php">Кошик</a>
+    28  </nav>
+    29
+    30  <main>
+    31  <?php foreach ($products as $product): ?>
+    32      <form method="POST">
+    33          <h3><?= htmlspecialchars($product['name']) ?> — <?= $product['price'] ?> грн</h3>
+    34          <input type="hidden" name="id" value="<?= $product['id'] ?>">
+    35          Кількість: <input type="number" name="quantity" value="1" min="1">
+    36          <button type="submit">Купити</button>
+    37      </form>
+    38      <hr>
+    39  <?php endforeach; ?>
+    40  <a href="cart.php">Перейти до кошика</a>
+    41  </main>
+    42
+    43  <footer style="color:white;"><p><a href="home.php" style="color:white;">Головна</a> | <a href="index.php" style="color:white;">Товари</a> | <a href="cart.php" style="color:white;">Кошик</a></p></footer>
+    44
+    45  </body>
+46	</html>
+
+4.	home.php
+     1  <!DOCTYPE html>
+     2  <html>
+     3  <head>
+     4      <title>Home</title>
+     5      <link rel="stylesheet" href="styles.css">
+     6  </head>
+     7  <body>
+     8  <header>
+     9      <nav class="menu">
+    10          <a href="home.php">Головна</a>
+    11          <a href="index.php">Продукти</a>
+    12          <a href="cart.php">Кошик</a>
+    13      </nav>
+    14      <h1>Вітаємо у нашому магазині</h1>
+    15  </header>
+    16
+    17  <main>
+    18      <h2>Вітаємо у продовольчому магазині "Весна"!</h2>
+    19      <p>Оберіть опцію:</p>
+    20      <ul>
+    21          <li><a href="index.php">Дивитися товари</a></li>
+    22          <li><a href="cart.php">Перейти до кошика</a></li>
+    23      </ul>
+    24  </main>
+    25
+    26  <footer>
+    27      <nav class="menu">
+    28          <a href="home.php">Головна</a>
+    29          <a href="index.php">Продукти</a>
+    30          <a href="cart.php">Кошик</a>
+    31          <a href="about.php">Про нас</a>
+    32      </nav>
+    33  </footer>
+    34  </body>
+    35  </html>
+
+
+
+Посилання на відео на Ютубі
 https://youtu.be/7sZpm__yElU
