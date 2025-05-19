@@ -100,6 +100,8 @@ SELECT * FROM products;
 00:00 Початок
 00:10 Вступ
 1:00 Детальний опис коду
+
+ДОДАТОК В
 GitHub репозиторій: https://github.com/NureAlieksieievaKateryna/smp-pzpi-23-4-alieksieieva-kateryna/blob/main/Lab3/smp-pzpi-23-4-alieksieieva-kateryna-lab3/shop/db.php
 1.	Заповнення бази товарами
      1    <?php
