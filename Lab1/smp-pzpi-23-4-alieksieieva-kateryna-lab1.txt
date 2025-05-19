@@ -85,6 +85,9 @@
 Хронологічний опис відеозапису:
 00:00 Початок
 00:10 Вступ
+
+GitHub репозиторій: https://github.com/NureAlieksieievaKateryna/smp-pzpi-23-4-alieksieieva-kateryna/blob/main/Lab1/smp-pzpi-23-4-alieksieieva-kateryna-lab1/smp-pzpi-23-4-alieksieieva-kateryna-lab1-code
+
 Розроблений скрипт
      1  #!/bin/bash
      2
