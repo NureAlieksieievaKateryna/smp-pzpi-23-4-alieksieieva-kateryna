@@ -86,6 +86,7 @@
 00:00 Початок
 00:10 Вступ
 
+ДОДАТОК В
 GitHub репозиторій: https://github.com/NureAlieksieievaKateryna/smp-pzpi-23-4-alieksieieva-kateryna/blob/main/Lab1/smp-pzpi-23-4-alieksieieva-kateryna-lab1/smp-pzpi-23-4-alieksieieva-kateryna-lab1-code
 
 Розроблений скрипт
@@ -309,19 +310,3 @@ GitHub репозиторій: https://github.com/NureAlieksieievaKateryna/smp-p
    218
    219  rm -f "$temp_a" "$temp_b" "$temp_group_file"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-Посилання на відео на ютуб
-
-https://youtu.be/V8rq_QQ33no
