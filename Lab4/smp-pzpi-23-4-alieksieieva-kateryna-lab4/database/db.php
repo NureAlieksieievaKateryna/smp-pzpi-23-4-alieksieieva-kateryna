@@ -1,11 +1,9 @@
 <?php
-// session_start(); ❌ УДАЛИТИ ЦЕЙ РЯДОК
 
-// Подключение к SQLite базе
 $db = new PDO('sqlite:users.db');
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-// Функция аутентификации пользователя
+
 function authenticateUser($username, $password) {
     global $db;
     $stmt = $db->prepare("SELECT * FROM users WHERE username = ?");
@@ -18,7 +16,6 @@ function authenticateUser($username, $password) {
     return false;
 }
 
-// Проверка авторизации
 function isLoggedIn() {
     return isset($_SESSION['user']);
 }
